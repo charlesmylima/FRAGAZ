@@ -1,0 +1,251 @@
+
+Notas de Lançamento – Atualizações do Módulo Almoxarifado 8.20
+
+
+Resumo
+Principais modificações, Ressuprimento, Assinatura Digital, Entrada de Material, Melhorias Visuais Inventário, Relatório de Curva ABC, Bens em desuso, Cadastro de Cotas
+
+
+Resumo	1
+Ressuprimento	1
+Siglas	2
+Cálculo	2
+Visualização	3
+Parâmetros	3
+Assinatura Digital de Documentos	4
+Busca de Documentos	4
+Melhoria de Inventário	4
+Cotas	4
+Entrada de Materiais	4
+Relatório ABC	4
+Gerenciamento de Desuso	5
+
+
+
+Ressuprimento
+O novo módulo de Ressuprimento metrifica seu consumo de estoque, para materiais que forem selecionados, partir disso utilizando o consumo diário médio, e tempo médio desses materiais, para definir um estoque mínimo para consumo, com base no estoque mínimo marcamos uma margem de segurança e assim o sistema marca um ponto de refazer o suprimento.
+Observações:  
+Com a nova rotina sistema pode (se desejado) ser configurado receber notificações, visualizações no painel de materiais que estão em nível ideal para ressuprimento.
+É possível parametrizar o sistema para ter período de validação para cálculo de consumo médio. (ex: considerar último semestre (6 meses) de operações para calculo de consumo médio)
+É possível parametrizar o sistema para considerar período para recalculo de produtos (ex: recalculo todo início de mês, recalculo a cada 5 minutos).
+
+Siglas
+CD = Consumo Diário
+TR = Tempo para Reposição
+MS = Margem de Segurança (%)
+LP = Limite de Proximidade (%)
+
+
+
+
+Cálculo operado para decisão do sistema
+
+Valor
+Fórmula
+Finalidade
+Estoque Mínimo (EM)
+EM = CD * TR
+Estoque mínimo até próxima reposição
+Estoque Máximo (EMx)
+EMx = (CD * TR) * 2
+Ponto de Estoque máximo que consumo consegue suprir
+Ponto de Ressuprimento (PR)
+PR = EM * (1 + MS)
+Ponto ideal para reposição
+Ponto de Notificação (PN)
+PN = EM * (1 +LP)
+Ponto em que sistema dispara notificações, e visualizações em painéis
+
+
+Exemplo:
+
+Considerando um consumo nos últimos 3 meses de 369, de caixas de café, e o sistema configurado para validação de 3 em 3 meses.
+Consumo diário médio será:
+ 369 / 3
+123 / 30
+Consumo diário (CD): 4,1
+E que fazemos a reposição de 2 em 2 semanas (10 dias de trabalho);
+TR = 10
+O consumo mínimo de café até a próxima reposição será, 
+EM = CD * TR
+EM = 4,1 * 10 
+EM = 41
+O estoque máximo será de,
+EMx = ( CD * TR ) * 2
+EMx = 82
+Considerando que nossa margem de segurança para repor o café é de 20% do nosso estoque mínimo então,
+PR = EM * ( 1 + MS )
+PR = 41 * 1,2
+PR = 49
+E considerando que configuremos uma margem limite de 25%, estaremos recebendo relatório e notificações do nosso café próximo ao fim já quando ele tiver:
+PN = EM * ( 1 + ML )
+PN = 41 * 1,25
+PN = 51
+Notificação ocorrerá com 51 café em estoque
+Visualização
+
+
+
+
+Parâmetros
+Definir dias de redefinição de Estoque mínimo (ex: a cada 5 minutos, todo dia primeiro do mês, etc).
+Definir horário de notificação (ex: a cada 5 minutos, todo dia primeiro do mês, etc).
+
+Obs Funcionalidade de ressuprimento de documentos pode ser liberada ou não
+
+Assinatura Digital de Documentos
+Nova rotina de indexação de documentos direto pelo almoxarifado, agora nas novas rotinas de indexação, disponível para inclusão em: saída, entrada, transferência, desuso. A assinatura digital se dá pela leitura de um certificado digital já instalado no computador, assinatura eletrônica, pelo CPF, de uma pessoa ou de múltiplas pessoas.
+É possível pelo sistema:
+Assinar documentos partir de seu CPF
+
+Assinar documentos partir de um certificado instalado no seu computador, ou instalado num USB
+
+Múltiplas pessoas assinarem documentos (as pessoas vinculadas ao documento)
+
+Colocara visualização de documento apenas para alguns interessados
+ 
+ 
+Telas:
+Tela de anexação de documentos
+
+
+Tela para assinatura digital de um documento
+
+Parâmetros: é possível permitir ou não a opção de assinatura digital nos documentos.
+
+Assinatura de Relatórios
+Em relatórios agora, temos a opção de virtualizar os relatórios gerados, onde poderemos assiná-los, todas as opções anteriores de assinatura única, assinatura com vários colaboradores, assinatura com certificado digital instalado ou via token.
+
+Opção para assinatura de relatórios:
+
+Tela para gerenciar relatórios virtualizados e assinados digitalmente
+
+
+
+Obs Funcionalidade de assinatura de documentos pode ser liberada ou não
+
+
+Busca de Documentos
+Área para consulta rápida de documentos, nova função permite a consulta rápida de todos os documentos anexadas no sistema, busca de documentos usando detalhes de itens, fornecedores e documentos.
+
+Telas:
+Nova opção
+
+
+Formas de buscar documento
+
+
+Busca de documento por Item
+
+
+
+Busca de documento por Fornecedor
+
+Download rápido de documentos
+
+Separação de documentos por tipo
+
+
+Melhoria de Inventário
+Rotina de inventário melhorada, nomenclatura alterada, criação de comissão de pessoas, agente para cada almoxarifado (quando é assinada um membro para comitiva, ele é notificado), inventário agora ao ser aberto pode barrar operações de entrada e saída no sistema (caso desejado), além disso inventários podem ser visualizados por relatórios, ou por exportação em PDF ou XLS.
+	Inventários podem ser controlado na pagina de inventário, visualização, cancelamento de inventários em aberto é possível.
+Nova nomenclatura para acessar página de inventário
+
+Melhoria na validação da comissão de inventário (restrições para datas inválidas, permissões indevidas)
+
+Bloqueio de saídas e entradas ao realizar inventário (isso podendo ser parametrizado)
+
+Tela de listagem de inventário (Edição de inventário, cancelamento, visualização de situação inventário, PDF, Excel)
+
+Etapa dedicada a bens de consumo ao realizar um inventário
+
+Novo tipo de movimentação (saída e entrada), chamada ajuste de inventário, serve para identificar operações corretivas pós inventário
+
+Edição de inventário e visualização da situação dele
+
+
+Relatório de resultados do inventário
+
+
+
+Cotas
+Cotas funcionam como bloqueio de saída de itens, é possível determinar através do consumo diário médio, uma determinada quantidade em estoque, que caso seja atingida irá bloquear a saída de itens.
+
+É possível ir por cada órgão em cada almoxarifado e procurar os materiais específicos para adicionar a cota
+
+Ação de bloqueio cota
+
+
+Obs Funcionalidade de cotas pode ser liberada ou não 
+Relatório ABC
+Novo relatório em Cadastros Básicos> Estoques>Relatório de Curva ABC, relatório com demonstrativo de saídas de produtos, em que operador pode classificar margens A, B e C, assim visualizando produtos com maior margem de valor de consumo no estoque, dentro de um determinado período, também possui uma margem para ignorar produtos com vazão muito baixa evitando produtos “sujos”.
+
+Caminho Relatórios>Estoques>RelatóriosABC;
+
+Aqui no exemplo vamos classificar os produtos:
+Os produtos A de consumo, que representam de 0% a 45% do valor das nossas movimentações,
+Os produtos B de consumo, que representam de 45% a 65% do valor das nossas movimentações,
+Os produtos C de consumo, que representam de 65% a 100% do valor das nossas movimentações,
+Colocamos no relatório, o consumo mínimo sendo 5%, então produtos que representam de 95% a 100% das nossas operações serão ignorados (pois eles tem movimentações muito baixas, e deixariam nosso relatório poluído),
+
+Com nosso relatório final podemos visualizar nossas operações e um gráfico em pizza com a representatividade de cada uma delas
+
+
+Curva em pizza
+
+
+
+
+Gerenciamento de Desuso
+O Sistema de Almoxarifado agora conta com a nova listagem "Vitrine de Bens em Desuso", permitindo classificação de itens para desuso, centralizado dos bens classificados como em desuso, emissão rápida de relatórios, e gerenciamento de itens em desuso que entram em operação dentro do próprio órgão (transferência interna), ou para órgãos externos (transferência externa).
+
+Funcionalidades que gerenciamento de desuso possui:
+
+Vitrine de desuso (visualização de itens marcados para desuso), podemos ver aqui a quantidade do item, sua situação e tirar um relatório em PDF e XLS para esses itens que estão em desuso.
+
+Logo ao topo temos a opção de abrir uma nova solicitação de transferência para materiais em desuso (transferência podendo ser interna ou externa)
+
+Também temos uma área de cadastro de desuso, onde um gestor, pode realizar o cadastro direto de itens para desuso.
+
+Tela de cadastro (inclusão de justificativa, múltiplos itens)
+
+Seleção de itens
+
+Movimentação de itens em desuso para uso (transferência interna ou externa feita pelo orgão)
+
+É possível gerenciar solicitações de materiais para desuso abertos pelo catálogo de desuso, pelos origem no catálogo de desuso
+
+
+
+
+Obs Funcionalidade de desuso pode ser liberada ou não
+
+
+Fechamento Automático
+A funcionalidade de fechamento de estoque, agora para ser habilitada o fechamento automático do mês, com algumas personalizações para quando realizar o fechamento mensal, configurações possíveis são:
+Definir momento específico para fechamento do mês
+Exemplo: realizar o fechamento do mês todo início de mês ao meio-dia
+Definir fechamento automático para apenas fechar em dia de semana
+É possível unir as configurações acima, para fechar sempre no dia 5 do mês, porém quando for dia de semana
+Se fechamento manual for feito antes do fechamento automático sistema não realizará o fechamento automático daquele mês
+
+Novo Fluxo de Recebimento por Item
+Parametrização e Ativação
+br.com.azi.almox.requisicao.recebimento
+Valor padrão do parametro “total”, novo valor: “item”
+Nova etapa apra recebimento (etapa de liberação)
+Na nova etapa terá:
+Novo botão: "Finalizar e Enviar Recebimento" 
+Criação de regras para estorno total ou parcial, controle visual dos status e bloqueio de edição dos campos de recebimento antes do aceite.
+Etapas recebimento por Item
+“Iniciar recebimento”, “Receber” e “Rejeitar”
+Permissões:
+Requisicoes.EnviarParaRecebimento → Permite enviar requisições da situação "Liberação" para "Recebimento".
+Requisicoes.Recebimento → Habilita as ações de recebimento por item.
+Requisicoes.RequisicaoItens.Receber → Permite aceitar o item individualmente.
+Requisicoes.RequisicaoItens.Rejeitar → Permite rejeitar o item individualmente
+Relatórios e Notificações
+Nota de Requisição e Relatório: Inclusão dos campos Situação Requisição, Situação Recebimento, Responsável Recebimento e Número de Identificação nos Dados Gerais. Nova coluna "Recebido?" na tabela de Itens Atendidos.
+Notificações: Ajustes para evitar o envio de notificações duplicadas e para não alertar sobre requisições já recebidas, tornando as notificações mais inteligentes e relevantes.
+
+

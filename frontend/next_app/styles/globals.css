@@ -1,0 +1,37 @@
+:root{
+  /* Dark palette similar to ChatGPT: black / gray / white text */
+  --bg:#0b0b0b;      /* page background */
+  --panel:#111315;   /* panels */
+  --muted:#9ca3af;   /* muted text */
+  --text:#ffffff;    /* main text */
+  --accent:#10a37f;  /* accent (green-ish) */
+}
+*{box-sizing:border-box}
+body{font-family:Inter,Segoe UI,Arial,Helvetica,sans-serif;margin:0;background:var(--bg);color:var(--text)}
+.header{display:flex;justify-content:space-between;align-items:center;padding:18px 24px;border-bottom:1px solid rgba(255,255,255,0.04);background:linear-gradient(90deg,#070707,#0f0f0f)}
+.header nav a{margin-left:12px;color:var(--accent);text-decoration:none}
+.container{max-width:1200px;margin:28px auto;padding:12px}
+.doc-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:12px}
+.doc-item{background:var(--panel);padding:16px;border-radius:10px}
+.meta{color:var(--muted);font-size:0.9rem}
+.footer{padding:12px;text-align:center;color:var(--muted);border-top:1px solid rgba(255,255,255,0.04)}
+
+/* Chat layout */
+.chat-grid{display:grid;grid-template-columns:320px 1fr;gap:16px;min-height:80vh}
+.side{background:var(--panel);padding:12px;border-radius:8px}
+.btn{display:inline-block;padding:8px 12px;border-radius:8px;background:var(--accent);color:white;border:none;cursor:pointer}
+.conv-list{list-style:none;padding:8px 0;margin:8px 0}
+.conv-list li{padding:8px;border-radius:6px;cursor:pointer}
+.conv-list li.active{background:#e8f0ff}
+.chat-area{background:transparent}
+.messages{display:flex;flex-direction:column;gap:12px;padding:12px;flex:1;overflow:auto;max-height:calc(100vh - 320px)}
+.msg{padding:12px;border-radius:10px;background:rgba(255,255,255,0.03);color:var(--text)}
+.msg-user{background:linear-gradient(90deg, rgba(16,163,127,0.12), rgba(16,163,127,0.06));align-self:flex-end}
+.msg-assistant{background:rgba(255,255,255,0.02);align-self:flex-start}
+.composer{display:flex;gap:8px;padding:12px;background:transparent}
+.composer textarea{flex:1;min-height:100px;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02);color:var(--text)}
+.empty{padding:32px;color:var(--muted)}
+
+@media (max-width:900px){
+  .chat-grid{grid-template-columns:1fr}
+}

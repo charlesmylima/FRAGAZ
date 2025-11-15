@@ -1,0 +1,60 @@
+# Node
+node_modules/
+frontend/next_app/.next/
+
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+pip-wheel-metadata/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# IDEs
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Environment variables
+.env
+.env.*
+
+# Jupyter
+.ipynb_checkpoints/
+
+# ChromaDB fallback and index files
+.fragaz_index.json
+.chromadb_fragaz/
+
+# Persisted DB files
+*.db
+*.sqlite3
+
+# Logs
+*.log
+
+# Build artifacts
+*.egg
+.eggs/
+
+# Misc
+Thumbs.db
+desktop.ini
+

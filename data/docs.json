@@ -1,0 +1,23 @@
+[
+  {
+    "id": "doc-1",
+    "title": "Reverter transação no Módulo Financeiro",
+    "content": "Para reverter uma transação no módulo financeiro, verifique primeiro o status do pagamento. Se o pagamento estiver com status 'confirmado', abra o painel de transações, localize o ID do ticket relacionado e selecione 'Reverter'. É necessário registrar um comentário com o motivo e anexar evidências. Em caso de erro, contate o time de desenvolvimento.",
+    "type": "manual",
+    "source": "manual_financeiro.pdf"
+  },
+  {
+    "id": "doc-2",
+    "title": "Procedimento de recuperação de senha",
+    "content": "O usuário pode redefinir a senha utilizando a opção 'Esqueci minha senha' no portal. Se a opção falhar, proceda com a verificação de identidade via token enviado por SMS e gere um link temporário com validade de 15 minutos.",
+    "type": "kb",
+    "source": "kb_auth"
+  },
+  {
+    "id": "doc-3",
+    "title": "Como interpretar logs do serviço X",
+    "content": "Os logs do serviço X possuem campos: timestamp, level, componente e mensagem. Para identificar um timeout, filtre por level=ERROR e busque por 'timeout' ou 'connection refused'. Normalmente a correção envolve reiniciar o serviço e abrir um ticket para infra.",
+    "type": "ticket",
+    "source": "ticket_9345"
+  }
+]
