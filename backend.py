@@ -18,6 +18,8 @@ import os
 from dataclasses import dataclass, asdict
 from pathlib import Path
 from typing import Dict, List, Optional
+import requests
+import time
 
 try:
     import numpy as np
@@ -79,6 +81,15 @@ HARDCODED_GEMINI_KEY = "AIzaSyBd8QXKbgHYvdTIg1vQeZDAONpvEtdEKwk"
 if HARDCODED_GEMINI_KEY and not (os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")):
     os.environ["GEMINI_API_KEY"] = HARDCODED_GEMINI_KEY
     logger.warning("ATENÇÃO: Usando GEMINI_API_KEY hardcoded em `backend.py`. Remova essa chave antes de comitar/compartilhar`.")
+
+# Defaults for Chroma remote (user requested hard-coded IP)
+os.environ.setdefault("CHROMA_SERVER_IP", os.environ.get("CHROMA_SERVER_IP") or "134.65.230.237")
+os.environ.setdefault("CHROMA_SERVER_PORT", os.environ.get("CHROMA_SERVER_PORT") or "8000")
+os.environ.setdefault("CHROMA_AUTH_TOKEN", os.environ.get("CHROMA_AUTH_TOKEN") or "StocksRAG")
+
+# Defaults for OCI (can be overridden via env vars)
+os.environ.setdefault("OCI_NAMESPACE", os.environ.get("OCI_NAMESPACE") or "axnosoetk7zq")
+os.environ.setdefault("OCI_BUCKET_NAME", os.environ.get("OCI_BUCKET_NAME") or "bucket-20251017-0832")
 
 
 @dataclass
@@ -308,13 +319,128 @@ def query_endpoint(req: QueryRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# --- OCI helper (basic) -----------------------------------------------------
+def get_oci_client():
+    """Tenta criar um cliente OCI usando Instance Principals.
+    Retorna None se não for possível (caller deve tratar)."""
+    try:
+        import oci
+        from oci.auth.signers import InstancePrincipalsSecurityTokenSigner
+        signer = InstancePrincipalsSecurityTokenSigner()
+        client = oci.object_storage.ObjectStorageClient(config={}, signer=signer)
+        # valida cliente
+        client.get_namespace()
+        return client
+    except Exception as e:
+        logger.warning("OCI client não inicializado: %s", e)
+        return None
+
+
+# --- Endpoint de scraping do Confluence ------------------------------------
+class ScrapeConfluenceRequest(BaseModel):
+    url: str
+    collection_name: Optional[str] = None
+    username: Optional[str] = None
+    api_token: Optional[str] = None
+    title: Optional[str] = None
+
+
+@app.post("/scrape/confluence")
+def scrape_confluence(req: ScrapeConfluenceRequest):
+    """Busca uma página Confluence, extrai texto e envia os chunks para o ChromaDB.
+    Se `username` e `api_token` forem fornecidos, usa BasicAuth (Confluence Cloud).
+    """
+    try:
+        logger.info("/scrape/confluence solicitado: %s", req.url)
+        headers = {"User-Agent": "FRAGAZ-Scraper/1.0"}
+        auth = None
+        if req.username and req.api_token:
+            from requests.auth import HTTPBasicAuth
+
+            auth = HTTPBasicAuth(req.username, req.api_token)
+
+        r = requests.get(req.url, headers=headers, auth=auth, timeout=30)
+        if r.status_code != 200:
+            raise HTTPException(status_code=502, detail=f"Falha ao buscar página Confluence: {r.status_code}")
+
+        # extrai texto bruto
+        try:
+            from bs4 import BeautifulSoup
+
+            soup = BeautifulSoup(r.text, "html.parser")
+            text = soup.get_text(separator="\n")
+        except Exception:
+            # fallback simples
+            text = r.text
+
+        # gera chunks simples (por parágrafo / tamanho máximo)
+        max_len = 800
+        chunks: List[str] = []
+        for para in text.splitlines():
+            p = para.strip()
+            if not p:
+                continue
+            while len(p) > max_len:
+                chunks.append(p[:max_len])
+                p = p[max_len:]
+            chunks.append(p)
+
+        if not chunks:
+            raise HTTPException(status_code=400, detail="Nenhum conteúdo extraído da página.")
+
+        # embeddings: tenta usar sentence-transformers, senão fallback determinístico
+        embedding_vectors = []
+        try:
+            from sentence_transformers import SentenceTransformer
+
+            emb_model = SentenceTransformer("all-MiniLM-L6-v2", device="cpu")
+            for c in chunks:
+                vec = emb_model.encode([c])[0].tolist()
+                embedding_vectors.append(vec)
+        except Exception:
+            logger.warning("sentence-transformers não disponível — usando embedding determinístico")
+            for c in chunks:
+                embedding_vectors.append(_embed_text(c, dim=128))
+
+        # conecta ao Chroma (HTTP preferencial)
+        try:
+            import chromadb as _chromadb
+
+            chroma_client = None
+            try:
+                chroma_client = _chromadb.HttpClient(host=os.environ.get("CHROMA_SERVER_IP"), port=int(os.environ.get("CHROMA_SERVER_PORT")), headers={"X-Chroma-Token": os.environ.get("CHROMA_AUTH_TOKEN")})
+            except Exception:
+                # fallback local client
+                chroma_client = _chromadb.Client()
+
+            collection_name = req.collection_name or os.environ.get("COLLECTION_NAME", "fragaz")
+            coll = chroma_client.get_or_create_collection(collection_name)
+
+            ids = [f"confluence-{int(time.time())}-{i}" for i in range(len(chunks))]
+            metadatas = [{"source": req.url, "title": req.title or req.url, "chunk_index": i} for i in range(len(chunks))]
+
+            coll.add(documents=chunks, metadatas=metadatas, ids=ids, embeddings=embedding_vectors)
+            logger.info("Adicionados %d chunks ao Chroma collection=%s", len(chunks), collection_name)
+            return {"status": "success", "added": len(chunks), "collection": collection_name}
+        except Exception as e:
+            logger.exception("Falha ao enviar para Chroma: %s", e)
+            raise HTTPException(status_code=500, detail=f"Erro Chroma: {e}")
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("Erro em /scrape/confluence: %s", e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 if __name__ == "__main__":
-    # Start uvicorn programmatically with reload so 'python backend.py' works during dev
+    # Delegate to the modular app in backend_service
     try:
         import uvicorn
-        # Make reload opt-in to avoid watch/reload loops caused by files written by the app
+        from backend_service.app import app as imported_app
+
         reload_flag = os.environ.get("UVICORN_RELOAD", "0") == "1"
         logger.info("Iniciando servidor uvicorn (reload=%s) em http://127.0.0.1:8765", reload_flag)
-        uvicorn.run("backend:app", host="127.0.0.1", port=8765, reload=reload_flag, log_level="info")
+        uvicorn.run(imported_app, host="127.0.0.1", port=int(os.environ.get("FRAGAZ_PORT", 8765)), reload=reload_flag, log_level="info")
     except Exception as e:
-        logger.exception("Erro ao iniciar uvicorn: %s", e)
+        logger.exception("Erro ao iniciar uvicorn modular: %s", e)
