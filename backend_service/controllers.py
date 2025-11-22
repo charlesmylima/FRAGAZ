@@ -32,6 +32,69 @@ class QueryResponse(BaseModel):
 def health():
     return {"status": "ok"}
 
+# --- Novos endpoints para autenticação e usuário ---
+from fastapi import Depends, status, Request
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from pydantic import EmailStr
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
+
+fake_users_db = {
+    "teste@fragaz.com": {
+        "nome": "Teste",
+        "email": "teste@fragaz.com",
+        "senha": "senhaSegura123",
+        "ativo": True
+    }
+}
+
+class UsuarioCreate(BaseModel):
+    nome: str
+    email: EmailStr
+    senha: str
+
+@router.post("/usuarios")
+def criar_usuario(usuario: UsuarioCreate):
+    if usuario.email in fake_users_db:
+        raise HTTPException(status_code=400, detail="E-mail já cadastrado")
+    if len(usuario.senha) < 8:
+        raise HTTPException(status_code=400, detail="Senha deve ter ao menos 8 caracteres")
+    fake_users_db[usuario.email] = {
+        "nome": usuario.nome,
+        "email": usuario.email,
+        "senha": usuario.senha,
+        "ativo": True
+    }
+    return {"msg": "Usuário criado"}
+
+@router.post("/token")
+def login(form_data: OAuth2PasswordRequestForm = Depends()):
+    user = fake_users_db.get(form_data.username)
+    if not user or user["senha"] != form_data.password:
+        raise HTTPException(status_code=401, detail="Credenciais inválidas")
+    if not user["ativo"]:
+        raise HTTPException(status_code=403, detail="Usuário inativo")
+    return {"access_token": user["email"], "token_type": "bearer"}
+
+def get_current_user(token: str = Depends(oauth2_scheme)):
+    user = fake_users_db.get(token)
+    if not user:
+        raise HTTPException(status_code=401, detail="Token inválido")
+    return user
+
+@router.post("/chat")
+def chat_endpoint(pergunta: dict, user: dict = Depends(get_current_user)):
+    q = pergunta.get("pergunta", "")
+    if "ruim" in q:
+        return {"resposta": "Desculpe, não posso responder isso."}
+    return {"resposta": "Use o painel de admin" if "resetar senha" in q else "Resposta padrão"}
+
+@router.get("/busca")
+def busca(q: str, user: dict = Depends(get_current_user)):
+    if any(x in q for x in ["DROP", "--", ";"]):
+        raise HTTPException(status_code=400, detail="Erro: busca inválida")
+    return {"resultados": ["doc1", "doc2"]}
+
 
 @router.post("/query", response_model=QueryResponse)
 def query_endpoint(req: QueryRequest):

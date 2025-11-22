@@ -1,3 +1,45 @@
+## Testes Automatizados (Pytest)
+
+O projeto inclui uma bateria de testes automatizados para backend, segurança, limites e casos de uso do sistema. Para rodar todos os testes:
+
+```pwsh
+pytest tests
+```
+
+Principais testes implementados:
+
+- **Autenticação e Usuário:**
+  - Criação de usuário (senha forte, e-mail duplicado)
+  - Login (credenciais válidas, senha errada, usuário inativo)
+- **Chat (RAG):**
+  - Pergunta normal, ambígua, alucinação, documento atualizado (simulado)
+  - Pergunta muito longa
+  - Prompt Injection
+- **Busca:**
+  - Busca por palavra-chave
+  - Busca com múltiplos resultados
+  - Busca sem resultados
+  - SQL Injection
+- **Upload de Documentos (simulado):**
+  - Upload de PDF válido
+  - Upload sem permissão
+  - Upload de arquivo corrompido ou formato não suportado
+  - Upload muito grande
+- **Recuperação de Senha, Notificações, Sessão (simulado):**
+  - Recuperação de senha não implementada
+  - Notificações e desativação (não implementado)
+  - Sessão expirada (não implementado)
+- **Concorrência:**
+  - Login múltiplo (simulado)
+
+Os testes estão distribuídos nos arquivos:
+- `tests/test_auth.py` — autenticação, segurança, recuperação de senha
+- `tests/test_chat.py` — chat, perguntas, limites
+- `tests/test_db.py` — busca
+- `tests/test_scores.py` — funções de score e métricas
+- `tests/test_scrapping.py` — upload de documentos e limites
+
+Para garantir cobertura, execute todos os testes antes de submissão.
 # FRAGAZ — PoC RAG (Next.js + FastAPI)
 
 Este repositório agora referencia a arquitetura atual do PoC: um frontend desacoplado em **Next.js** (React) e um backend em **FastAPI** (Python). Abaixo há um resumo da nova arquitetura, instruções de execução e notas sobre a versão inicial baseada em Streamlit e as dificuldades observadas durante a modelagem do PoC.

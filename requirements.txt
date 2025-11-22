@@ -6,3 +6,5 @@ beautifulsoup4>=4.12.2
 sentence-transformers>=2.2.2
 fastapi
 uvicorn
+pytest
+httpx
